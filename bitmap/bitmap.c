@@ -3,12 +3,17 @@
  *
  * YUYV码流中提取单帧并转为RGB图片
  * https://blog.csdn.net/willib/article/details/51865514
+ *
+ *
+ * 实验素材
+ * https://github.com/yeapa/yuyv2rgb/blob/master/out.yuyv   （640x480)
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 typedef unsigned short WORD;
 typedef unsigned int DWORD;
@@ -51,6 +56,109 @@ typedef struct tagBITMAPINFOHEADER {
 
 #pragma pack() // 取消1字节对齐，恢复为默认对齐
 
+
+/* 文件不存在时返回-1 */
+int getFileSize(const char *path)
+{
+    int filesize = -1;
+    struct stat statbuff;
+    if (stat(path, &statbuff) < 0)
+    {
+        return filesize;
+    }
+    else
+    {
+        filesize = statbuff.st_size;
+    }
+    return filesize;
+}
+
+/*
+ * 从文件filename的offset处读取len字节，存到data中，返回已读取数据的字节数，如果失败，返回负数
+ * */
+int readdata(const char *filename, int offset, void *data, int len)
+{
+    if (len <= 0)
+    {
+        return len;
+    }
+
+    FILE *fp = fopen(filename, "rb");
+
+    if (!fp)
+    {
+        return -1;
+    }
+
+    if (0 != fseek(fp, offset, SEEK_SET))
+    {
+        fclose(fp);
+        return -2;
+    }
+
+    if (1 != fread(data, len, 1, fp))
+    {
+        fclose(fp);
+        return -3;
+    }
+
+    fclose(fp);
+    return len;
+}
+
+/*
+ * write [len] bytes [data] to [filename] at [offset], if the spcified file is not exist, this function will create it
+ * return [len] on success, otherwise return a negative integer
+ * */
+int writedata(const char *filename, int offset, const void *data, int len)
+{
+    if (len <= 0)
+    {
+        return len;
+    }
+
+
+    /* check weather the specified file exists */
+    FILE *fp = fopen(filename, "rb");
+    if (!fp)/* the file not exists, create it */
+    {
+        fp = fopen(filename, "wb");
+        if (!fp)
+        {
+            return -1; /* create file failed */
+        }
+        fclose(fp);
+    }
+    else
+    {
+        fclose(fp);
+    }
+
+
+    /* open for writing data */
+    fp = fopen(filename, "rb+");
+    if (!fp)
+    {
+        return -2;
+    }
+
+
+    if (0 != fseek(fp, offset, SEEK_SET))
+    {
+        fclose(fp);
+        return -3;
+    }
+
+
+    if (1 != fwrite(data, len, 1, fp))
+    {
+        fclose(fp);
+        return -4;
+    }
+
+    fclose(fp);
+    return len;
+}
 
 /*
  *  * append [len] bytes [data] to [filename] at the end of file, if the spcified file is not exist, this function will create it

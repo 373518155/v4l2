@@ -19,6 +19,8 @@ typedef unsigned short WORD;
 typedef unsigned int DWORD;
 typedef int LONG;
 
+#define MB (1024 * 1024)
+
 
 #define BYTES_PER_PIXEL 3
 
@@ -307,6 +309,7 @@ int main(int argc, const char **argv) {
     printf("sizeof(BITMAPFILEHEADER) = %d\n", sizeof(BITMAPFILEHEADER));
     printf("sizeof(BITMAPINFOHEADER) = %d\n", sizeof(BITMAPINFOHEADER));
 
+    // 下面生成一张位图
     int width = 64;
     int height = 32;
     int pixel_count = width * height;
@@ -314,7 +317,8 @@ int main(int argc, const char **argv) {
 
     unsigned char r = 0x20, g = 0x40, b = 0x80;
 
-    for (int i = 0; i < pixel_count; i++) {
+    int i;
+    for (i = 0; i < pixel_count; i++) {
         buffer[BYTES_PER_PIXEL * i] = b;
         buffer[BYTES_PER_PIXEL * i + 1] = g;
         buffer[BYTES_PER_PIXEL * i + 2] = r;
@@ -323,6 +327,25 @@ int main(int argc, const char **argv) {
     int filesize = create_bitmap24("./sample.bmp", width, height, buffer);
     printf("filesize[%d]\n", filesize);
     free(buffer);
+
+
+    const char *yuyv_file = "out_640_480.yuyv";
+    int file_size = getFileSize(yuyv_file);
+    if (file_size == -1) {
+        printf("Error!getFileSize failed\n");
+        return -1;
+    }
+    printf("file_size[%d]\n", file_size);
+    unsigned char *yuyv_buffer = (unsigned char *) malloc(2 * MB);
+    unsigned char *rgb_buffer = (unsigned char *) malloc(4 * MB);
+    readdata(yuyv_file, 0, yuyv_buffer, file_size);
+
+    int rgb_size = convert_yuv_to_rgb_buffer(yuyv_buffer, rgb_buffer, 640, 480);
+    printf("rgb_size[%d]\n", rgb_size);
+    create_bitmap24("out.bmp", 640, 480, rgb_buffer);
+    free(yuyv_buffer);
+    free(rgb_buffer);
+
     return 0;
 }
 

@@ -1,29 +1,27 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 /*
-ÔÚSDLÖĞÏÔÊ¾µ¥ÕÅYUYVÍ¼Æ¬
+åœ¨SDLä¸­æ˜¾ç¤ºå•å¼ YUYVå›¾ç‰‡
 */
 
 #include <stdio.h>
 #include <SDL.h>
 #include <Windows.h>
 
-// ÊäÈëÎÄ¼ş
+// è¾“å…¥æ–‡ä»¶
 const char *yuyvFile = "in_640_480.yuyv";
-// YUYVÍ¼ÏñµÄ¿í¶È
+// YUYVå›¾åƒçš„å®½åº¦
 const int W = 640;
-// YUYVÍ¼ÏñµÄ¸ß¶È
+// YUYVå›¾åƒçš„é«˜åº¦
 const int H = 480;
 
 #define MB (1024 * 1024)
 #define BUFFER_SIZE (1 * MB)
 
-// ÊäÈëBuffer
+// è¾“å…¥Buffer
 BYTE buffer[BUFFER_SIZE];
 
 /*
-»ñÈ¡ÎÄ¼ş´óĞ¡
-Èç¹ûÊ§°Ü£¬·µ»Ø-1
+è·å–æ–‡ä»¶å¤§å°
+å¦‚æœå¤±è´¥ï¼Œè¿”å›-1
 */
 long getFileSize(const char *filename) {
 	printf("filename[%s]\n", filename);
@@ -41,8 +39,8 @@ long getFileSize(const char *filename) {
 }
 
 /*
-¼ÓÔØÎÄ¼şÊı¾İµ½buffer
-Èç¹ûÊ§°Ü£¬·µ»Ø-1
+åŠ è½½æ–‡ä»¶æ•°æ®åˆ°buffer
+å¦‚æœå¤±è´¥ï¼Œè¿”å›-1
 */
 int loadData(const char* filename) {
 	long filesize = getFileSize(filename);
@@ -68,7 +66,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	// ÌáÉıÍ¼ÏñÖÊÁ¿£¬·ñÔòÄ¬ÈÏËõ·ÅÖÊÁ¿»áÓĞÃ«Øİ
+	// æå‡å›¾åƒè´¨é‡ï¼Œå¦åˆ™é»˜è®¤ç¼©æ”¾è´¨é‡ä¼šæœ‰æ¯›å‰Œ
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
 	SDL_Window* window = SDL_CreateWindow("YUYV Image", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_SHOWN);
@@ -77,7 +75,7 @@ int main(int argc, char* argv[])
 
 	while (true)
 	{
-		int e = SDL_UpdateTexture(texture, NULL, buffer, W * 2); // µÚ4¸ö²ÎÊı±íÊ¾Ã¿ĞĞ¶àÉÙ¸ö×Ö½Ú£¬³ËÒÔ2ÊÇÒòÎªÃ¿¸öÏñËØÕ¼ÓÃ2¸ö×Ö½Ú
+		int e = SDL_UpdateTexture(texture, NULL, buffer, W * 2); // ç¬¬4ä¸ªå‚æ•°è¡¨ç¤ºæ¯è¡Œå¤šå°‘ä¸ªå­—èŠ‚ï¼Œä¹˜ä»¥2æ˜¯å› ä¸ºæ¯ä¸ªåƒç´ å ç”¨2ä¸ªå­—èŠ‚
 
 		//SDL_RenderClear(render);
 		SDL_RenderCopy(render, texture, NULL, NULL);

@@ -13,6 +13,12 @@
 
 #include "queue_internal.h"
 
+/** Convenience wrapper around memfd_create syscall, because apparently this is
+  * so scary that glibc doesn't provide it...
+  */
+static inline int memfd_create(const char *name, unsigned int flags) {
+    return syscall(__NR_memfd_create, name, flags);
+}
 
 /** Convenience wrappers for erroring out
   */

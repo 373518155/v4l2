@@ -8,9 +8,11 @@
 #include <pthread.h>
 
 #include "queue.h"
+#include "slog.h"
 
 #define BUFFER_SIZE (getpagesize())
 
+const char *gsLog = "CameraRecorder";
 
 void *consumer_loop(void *arg) {
     queue_t *q = (queue_t *) arg;
@@ -22,6 +24,7 @@ void *consumer_loop(void *arg) {
         len = queue_get(q, (uint8_t *) buffer, sizeof(buffer));
         printf("buffer[%s], len[%d]", buffer, len);
 
+        buffer[len] = '\0';
         if (strcmp(buffer, "exit") == 0) {
             break;
         }
@@ -33,6 +36,7 @@ void *consumer_loop(void *arg) {
 
 
 int main() {
+    slog(gsLog, "main start...");
     queue_t q;
     queue_init(&q, BUFFER_SIZE);
 
@@ -193,3 +197,7 @@ int main() {
 //
 //    return 0;
 //}
+
+
+
+

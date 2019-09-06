@@ -22,9 +22,10 @@ void *consumer_loop(void *arg) {
     char buffer[200];
     while (1){
         len = queue_get(q, (uint8_t *) buffer, sizeof(buffer));
-        printf("buffer[%s], len[%d]", buffer, len);
-
         buffer[len] = '\0';
+        slog(gsLog, "buffer[%s], len[%d]", buffer, len);
+
+
         if (strcmp(buffer, "exit") == 0) {
             break;
         }

@@ -21,7 +21,6 @@
 #define FRAME_SIZE (WIDTH * HEIGHT * 2)
 #define QUEUE_BUFFER_SIZE (16 * getpagesize())
 
-unsigned char in_buf[FRAME_SIZE];  // 读取每个YUYV帧的BUFFER
 
 const char *gsLog = "CameraRecorder";
 
@@ -156,7 +155,12 @@ void *consumer_loop(void *arg) {
             break;
         }
 
-        if (frameData.size == 0) {
+        if (frameData.size > 0) {
+            // 由数据提供方分配内存，由数据使用方释放内存，因为内容数据并没有存放到队列中去，所以需要数据使用方用完后，释放内存
+            free(frameData.data);
+        }
+
+        if (frameData.size == 0) { // 表示处理完成
             break;
         }
         count++;
@@ -179,7 +183,6 @@ void *consumer_loop(void *arg) {
 int main() {
     slog(gsLog, "main start...");
 
-
     FILE* fp_src  = fopen("./vid_1565629469_640x480_480frames.yuyv", "rb");
     if (fp_src == NULL) {
         printf("Error open files.\n");
@@ -196,33 +199,27 @@ int main() {
     pthread_create(&consumer, &attr, &consumer_loop, (void *)&q);
 
     int i = 0;
-    FrameData *pFrameData;
+    FrameData frameData;
+	frameData.size = FRAME_SIZE;
     for (i = 0; i < FRAME_NUM; i++) {
         // 读取一帧数据
         slog(gsLog, "Process %d frames data", i);
-        fread(in_buf, FRAME_SIZE, 1, fp_src);
-        pFrameData = malloc(sizeof(FrameData));
 
-        slog(gsLog, "here");
-        if (pFrameData == NULL) {
+        // 由数据提供方分配内存，由数据使用方释放内存，因为内容数据并没有存放到队列中去，所以需要数据使用方用完后，释放内存
+        frameData.data = malloc(FRAME_SIZE);
+        if (frameData.data == NULL) {
             slog(gsLog, "Error!");
             return -1;
         }
+
         
-        pFrameData->data = malloc(FRAME_SIZE);
-        if (pFrameData->data == NULL) {
-            slog(gsLog, "Error!");
-            return -1;
-        }
-
-        pFrameData->size = FRAME_SIZE;
-        memcpy(pFrameData->data, in_buf, FRAME_SIZE);
-        queue_put(&q, (uint8_t *)pFrameData, sizeof(FrameData));
+        fread(frameData.data, FRAME_SIZE, 1, fp_src);
+        queue_put(&q, (uint8_t *)&frameData, sizeof(FrameData));
     }
 
     // put a extra frameData with size 0 to flush the encoder
-    pFrameData->size = 0;
-    queue_put(&q, (uint8_t *)pFrameData, sizeof(FrameData));
+    frameData.size = 0;
+    queue_put(&q, (uint8_t *)&frameData, sizeof(FrameData));
 
     intptr_t result;
     pthread_join(consumer, (void **) &result);
@@ -231,7 +228,6 @@ int main() {
     queue_destroy(&q);
 
     fclose(fp_src);
-
 
     slog(gsLog, "main end...");
     return 0;

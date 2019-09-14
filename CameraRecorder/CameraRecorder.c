@@ -12,25 +12,15 @@
 #include "x264.h"
 #include "queue.h"
 #include "slog.h"
+#include "config.h"
+#include "capture.h"
 
 
-#define WIDTH 640
-#define HEIGHT 480
 
-#define FRAME_NUM 480
-#define FRAME_SIZE (WIDTH * HEIGHT * 2)
 #define QUEUE_BUFFER_SIZE (16 * getpagesize())
 
 
 const char *gsLog = "CameraRecorder";
-
-/**
- * YUYV Frame Data
- */
-typedef struct {
-    int size;  // data size
-    unsigned char *data;
-} FrameData;
 
 
 int encodeYUYV(x264_t* pHandle, x264_param_t* pParam, FrameData *pFrameData, FILE *fp_dst,
@@ -122,7 +112,7 @@ void *consumer_loop(void *arg) {
     }
 
     int csp=X264_CSP_I422;  /* yuv 4:2:2 planar */
-    int width=WIDTH,height=HEIGHT;
+    int width=IMAGEWIDTH,height=IMAGEHEIGHT;
 
 
     x264_t* pHandle   = NULL;
@@ -133,6 +123,26 @@ void *consumer_loop(void *arg) {
     x264_param_default(pParam);
     pParam->i_width   = width;
     pParam->i_height  = height;
+    /*
+    //Param
+    pParam->i_log_level  = X264_LOG_DEBUG;
+    pParam->i_threads  = X264_SYNC_LOOKAHEAD_AUTO;
+    pParam->i_frame_total = 0;
+    pParam->i_keyint_max = 10;
+    pParam->i_bframe  = 5;
+    pParam->b_open_gop  = 0;
+    pParam->i_bframe_pyramid = 0;
+    pParam->rc.i_qp_constant=0;
+    pParam->rc.i_qp_max=0;
+    pParam->rc.i_qp_min=0;
+    pParam->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
+    pParam->i_fps_den  = 1;
+    pParam->i_fps_num  = 25;
+    pParam->i_timebase_den = pParam->i_fps_num;
+    pParam->i_timebase_num = pParam->i_fps_den;
+    */
+    pParam->i_fps_num = FPS;
+    slog(gsLog, "fps_den[%d], fps_num[%d]", pParam->i_fps_den, pParam->i_fps_num);
 
     pParam->i_csp=csp;
     x264_param_apply_profile(pParam, x264_profile_names[5]);
@@ -198,28 +208,7 @@ int main() {
 
     pthread_create(&consumer, &attr, &consumer_loop, (void *)&q);
 
-    int i = 0;
-    FrameData frameData;
-	frameData.size = FRAME_SIZE;
-    for (i = 0; i < FRAME_NUM; i++) {
-        // 读取一帧数据
-        slog(gsLog, "Process %d frames data", i);
-
-        // 由数据提供方分配内存，由数据使用方释放内存，因为内容数据并没有存放到队列中去，所以需要数据使用方用完后，释放内存
-        frameData.data = malloc(FRAME_SIZE);
-        if (frameData.data == NULL) {
-            slog(gsLog, "Error!");
-            return -1;
-        }
-
-        
-        fread(frameData.data, FRAME_SIZE, 1, fp_src);
-        queue_put(&q, (uint8_t *)&frameData, sizeof(FrameData));
-    }
-
-    // put a extra frameData with size 0 to flush the encoder
-    frameData.size = 0;
-    queue_put(&q, (uint8_t *)&frameData, sizeof(FrameData));
+    capture(&q);
 
     intptr_t result;
     pthread_join(consumer, (void **) &result);

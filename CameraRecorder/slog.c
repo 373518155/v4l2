@@ -13,7 +13,7 @@ int elog(const char *logname, const char *srcfile, int srcline, const char *form
     timerclear(&tms);
     gettimeofday(&tms, NULL);
     strftime(tstr, 100, "%Y-%m-%d %H:%M:%S", localtime(&tms.tv_sec));
-    sprintf(timestamp, "%s.%03d", tstr, tms.tv_usec / 1000); /* tv_usec是微秒，除以1000转换为毫秒 */
+    sprintf(timestamp, "%s.%03ld", tstr, tms.tv_usec / 1000); /* tv_usec是微秒，除以1000转换为毫秒 */
     /* end of get system time */
 
     char today[10 + 1] = ""; /* 格式：yyyy-mm-dd */
@@ -99,7 +99,7 @@ int hexlog(const char *logname, const char *srcfile, int srcline, const void *bu
     timerclear(&tms);
     gettimeofday(&tms, NULL);
     strftime(tstr, 100, "%Y-%m-%d %H:%M:%S", localtime(&tms.tv_sec));
-    sprintf(timestamp, "%s.%03d", tstr, tms.tv_usec / 1000); /* tv_usec是微秒，除以1000转换为毫秒 */
+    sprintf(timestamp, "%s.%03ld", tstr, tms.tv_usec / 1000); /* tv_usec是微秒，除以1000转换为毫秒 */
     /* end of get system time */
 
     char today[10 + 1] = ""; /* 格式：yyyy-mm-dd */

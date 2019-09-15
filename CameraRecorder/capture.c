@@ -278,7 +278,7 @@ int v4l2_frame_process(queue_t *q)
     char filename[100];
     time_t now = time(0);
 
-    int i = 0;
+
     FrameData frameData;
     int frame_count = 0;
     int is_start = 0;
@@ -318,9 +318,10 @@ int v4l2_frame_process(queue_t *q)
             printf("buf_len:%d\n",buffers[n_buffers].length);
 
             // 读取一帧数据
-            slog(gsLog, "Process %d frames data", i);
+            slog(gsLog, "Process %d frames data", frame_count);
 
             // 由数据提供方分配内存，由数据使用方释放内存，因为内容数据并没有存放到队列中去，所以需要数据使用方用完后，释放内存
+            frameData.size = FRAME_SIZE;
             frameData.data = malloc(FRAME_SIZE);
             if (frameData.data == NULL) {
                 slog(gsLog, "Error!");

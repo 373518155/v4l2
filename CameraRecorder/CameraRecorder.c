@@ -14,6 +14,7 @@
 #include "slog.h"
 #include "config.h"
 #include "capture.h"
+#include "../common/common.h"
 
 
 
@@ -77,7 +78,7 @@ int encodeYUYV(x264_t* pHandle, x264_param_t* pParam, FrameData *pFrameData, FIL
             return -1;
         }
 
-        printf("Succeed encode frame: %5d\n", pts);
+        slog(gsLog, "Succeed encode frame: %5d", pts);
 
         for ( j = 0; j < iNal; ++j){
             fwrite(pNals[j].p_payload, 1, pNals[j].i_payload, fp_dst);
@@ -156,6 +157,11 @@ void *consumer_loop(void *arg) {
     size_t count = 0;
     size_t len = 0;
 
+    char filename[100];
+    char timestamp[120];
+    getTimestamp(timestamp);
+    sprintf(filename, "ghost_%s_%dx%d.yuyv", timestamp, IMAGEWIDTH, IMAGEHEIGHT);  // 此文件用于与发送端数据对比
+
     FrameData frameData;
     while (1) {
         len = queue_get(q, (uint8_t *) &frameData, sizeof(FrameData));
@@ -166,6 +172,7 @@ void *consumer_loop(void *arg) {
         }
 
         if (frameData.size > 0) {
+            appenddata(filename, frameData.data, frameData.size);
             // 由数据提供方分配内存，由数据使用方释放内存，因为内容数据并没有存放到队列中去，所以需要数据使用方用完后，释放内存
             free(frameData.data);
         }

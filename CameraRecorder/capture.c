@@ -28,6 +28,7 @@
 #include "config.h"
 #include "queue.h"
 #include "slog.h"
+#include "../common/common.h"
 
 
 #define TRUE            (1)
@@ -274,10 +275,10 @@ int v4l2_frame_process(queue_t *q)
 
 
     //出队，处理，写入yuv文件，入队，循环进行
-    int loop = 0;
     char filename[100];
-    time_t now = time(0);
-
+    char timestamp[120];
+    getTimestamp(timestamp);
+    sprintf(filename, "vid_%s_%dx%d.yuyv", timestamp, IMAGEWIDTH, IMAGEHEIGHT);
 
     FrameData frameData;
     int frame_count = 0;
@@ -317,9 +318,6 @@ int v4l2_frame_process(queue_t *q)
             printf("time_deta:%lld\n\n",extra_time);
             printf("buf_len:%d\n",buffers[n_buffers].length);
 
-            // 读取一帧数据
-            slog(gsLog, "Process %d frames data", frame_count);
-
             // 由数据提供方分配内存，由数据使用方释放内存，因为内容数据并没有存放到队列中去，所以需要数据使用方用完后，释放内存
             frameData.size = FRAME_SIZE;
             frameData.data = malloc(FRAME_SIZE);
@@ -328,17 +326,16 @@ int v4l2_frame_process(queue_t *q)
                 return -1;
             }
             memcpy(frameData.data, buffers[n_buffers].start, FRAME_SIZE);
+            appenddata(filename, buffers[n_buffers].start, FRAME_SIZE); // 同时记录到yuyv文件中
 
             queue_put(q, (uint8_t *)&frameData, sizeof(FrameData));
 
-            printf("save frame %d OK\n", frame_count);
+            slog(gsLog, "Process %d frames data", frame_count);
 
             //入队循环
             ioctl(fd, VIDIOC_QBUF, &buf);
             frame_count++;
         }
-
-        loop++;
     }
     return TRUE;
 }

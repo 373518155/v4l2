@@ -32,4 +32,40 @@
         android:layout_height="wrap_content"
         android:text="获取预览分辨率"
         />
+    <Button
+        android:id="@+id/btn_get_picture_resolution"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取圖片分辨率"
+        />
+    <Button
+        android:id="@+id/btn_get_video_resolution"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取視頻分辨率"
+        />
+    <Button
+        android:id="@+id/btn_get_focus_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取對焦模式"
+        />
+    <Button
+        android:id="@+id/btn_get_picture_format"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取圖片格式"
+        />
+    <Button
+        android:id="@+id/btn_get_preview_format"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取預覽格式"
+        />
+    <Button
+        android:id="@+id/btn_get_preview_fps_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取預覽幀率"
+        />
 </LinearLayout>

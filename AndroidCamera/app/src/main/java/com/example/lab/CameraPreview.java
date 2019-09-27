@@ -8,7 +8,7 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
 
@@ -38,9 +38,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
+        SLog.info("surfaceCreated");
         mCamera = getCameraInstance();
         try {
             mCamera.setPreviewDisplay(holder);
+            mCamera.setPreviewCallback(this);
             mCamera.startPreview();
         } catch (IOException e) {
             SLog.info("Error!setting camera preview: " + e.getMessage());
@@ -48,6 +50,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
+        SLog.info("surfaceDestroyed");
         mHolder.removeCallback(this);
         mCamera.setPreviewCallback(null);
         mCamera.stopPreview();
@@ -56,5 +59,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+    }
+
+    public String getCameraInfo() {
+        Camera.Parameters parameters = mCamera.getParameters();
+
+        Camera.Size size = parameters.getPreviewSize();
+        SLog.info("width[%d], height[%d]", size.width, size.height);
+        return null;
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        SLog.info("onPreviewFrame, data length[%d]", data.length);
     }
 }

@@ -9,7 +9,6 @@ import android.widget.Button;
 
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.interfaces.OnSelectListener;
-import com.yanzhenjie.permission.Permission;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 result.add(item);
             }
         }
-        
+
 
         camera.release();
         return stringListToArray(result);

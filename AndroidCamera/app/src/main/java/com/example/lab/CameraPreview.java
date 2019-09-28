@@ -1,11 +1,17 @@
 package com.example.lab;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
+import android.os.Environment;
 import android.util.AttributeSet;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
@@ -25,6 +31,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         mHolder = getHolder();
         mHolder.addCallback(this);
+
+        SLog.info("is Activity[%s]", context instanceof Activity);
     }
 
     private static Camera getCameraInstance() {
@@ -41,6 +49,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         SLog.info("surfaceCreated");
         mCamera = getCameraInstance();
         try {
+            int rotateDegree = getPreviewRotateDegree();
+            mCamera.setDisplayOrientation(rotateDegree);
             mCamera.setPreviewDisplay(holder);
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
@@ -66,11 +76,58 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         Camera.Size size = parameters.getPreviewSize();
         SLog.info("width[%d], height[%d]", size.width, size.height);
+        int previewFormat = parameters.getPreviewFormat();
+        SLog.info("previewFormat[%s]", Util.translatePreviewFormat(previewFormat));
         return null;
     }
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        SLog.info("onPreviewFrame, data length[%d]", data.length);
+        // https://blog.csdn.net/tanmengwen/article/details/41412425
+        // Android -- 将NV21图像保存成JPEG
+        long threadId = Thread.currentThread().getId();
+        // SLog.info("onPreviewFrame, threadId[%d], length[%d]", threadId, data.length);
+        boolean oneShot = false;
+        if (oneShot) {
+            String absoluteFilePath = Environment.getExternalStorageDirectory() + "/1/" + System.currentTimeMillis() + ".nv21";
+            SLog.info("absoluteFilePath[%s]", absoluteFilePath);
+            File file = new File(absoluteFilePath);
+            try {
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(data);
+                fos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            oneShot = false;
+        }
+    }
+
+    private int getPreviewRotateDegree(){
+        int phoneDegree = 0;
+        int result = 0;
+        //获得手机方向
+        int phoneRotate =  ((Activity) getContext()).getWindowManager().getDefaultDisplay().getOrientation();
+        //得到手机的角度
+        switch (phoneRotate) {
+            case Surface.ROTATION_0: phoneDegree = 0; break;  		//0
+            case Surface.ROTATION_90: phoneDegree = 90; break;		//90
+            case Surface.ROTATION_180: phoneDegree = 180; break;	//180
+            case Surface.ROTATION_270: phoneDegree = 270; break;	//270
+        }
+        //分别计算前后置摄像头需要旋转的角度
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        boolean isFrontCamera = false;
+        if(isFrontCamera){
+            Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_FRONT, cameraInfo);
+            result = (cameraInfo.orientation + phoneDegree) % 360;
+            result = (360 - result) % 360;
+        }else{
+            Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, cameraInfo);
+            result = (cameraInfo.orientation - phoneDegree +360) % 360;
+        }
+        return result;
     }
 }

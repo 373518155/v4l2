@@ -106,13 +106,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (parameterType == ParameterType.PICTURE_FORMAT) {
             List<Integer> formatList = parameters.getSupportedPictureFormats();
             for (int format : formatList) {
-                String formatDesc = translateImageFormat(format);
+                String formatDesc = Util.translateImageFormat(format);
                 result.add(formatDesc);
             }
         } else if (parameterType == ParameterType.PREVIEW_FORMAT) {
             List<Integer> formatList = parameters.getSupportedPreviewFormats();
             for (int format : formatList) {
-                String formatDesc = translatePreviewFormat(format);
+                String formatDesc = Util.translatePreviewFormat(format);
                 result.add(formatDesc);
             }
         } else if (parameterType == ParameterType.PREVIEW_FPS_RANGE) {
@@ -163,27 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return stringArray;
     }
 
-    private String translateImageFormat(int format) {
-        SLog.info("format[%d]", format);
-        switch (format) {
-            case 0x100:
-                return "JPEG";
-            default:
-                return "UNKNOWN";
-        }
-    }
 
-    private String translatePreviewFormat(int format) {
-        SLog.info("format[%d]", format);
-        switch (format) {
-            case 0x11:
-                return "NV21";
-            case 0x32315659:
-                return "YV12";
-            default:
-                return "UNKNOWN";
-        }
-    }
 }
 
 

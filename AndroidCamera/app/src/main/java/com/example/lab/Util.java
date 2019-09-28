@@ -36,4 +36,27 @@ public class Util {
     public static void exitFullScreen(Activity activity) {
         activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
+
+
+    public static String translateImageFormat(int format) {
+        SLog.info("format[%d]", format);
+        switch (format) {
+            case 0x100:
+                return "JPEG";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
+    public static String translatePreviewFormat(int format) {
+        SLog.info("format[%d]", format);
+        switch (format) {
+            case 0x11:
+                return "NV21";
+            case 0x32315659:
+                return "YV12";
+            default:
+                return "UNKNOWN";
+        }
+    }
 }

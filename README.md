@@ -8,6 +8,10 @@
 
 alsa 录制PCM音频
 
+## AndroidCamera
+
+Android相机
+
 ## bitmap
 
 YUYV转RGB24并保存为bitmap
@@ -34,6 +38,11 @@ Android的Demo实验模板
 ## md5
 
 md5算法的C语言实现
+
+## NV21-to-RGB
+
+nv21图片转bmp格式
+https://github.com/yushulx/NV21-to-RGB
 
 ## sdl2_display_yuyv_image
 

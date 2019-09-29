@@ -14,6 +14,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         Util.enterFullScreen(this);
 
         findViewById(R.id.btn_info).setOnClickListener(this);
+        findViewById(R.id.btn_shutter).setOnClickListener(this);
         cameraPreview = findViewById(R.id.camera_preview);
     }
 
@@ -31,6 +32,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         if (id == R.id.btn_info) {
             cameraPreview.getCameraInfo();
+        } else if (id == R.id.btn_shutter) {
+            cameraPreview.takePicture();
         }
     }
 }

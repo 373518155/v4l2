@@ -18,6 +18,7 @@ import java.io.IOException;
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
+    private boolean oneShot;
 
     public CameraPreview(Context context) {
         this(context, null);
@@ -52,6 +53,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         try {
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setPreviewFormat(ImageFormat.NV21);  // 设置了这个，预览才是彩色的，不然是黑白的
+            Camera.Size size = parameters.getPreviewSize();
+            SLog.info("width[%d], height[%d]", size.width, size.height);
             mCamera.setParameters(parameters);
 
             int rotateDegree = getPreviewRotateDegree();
@@ -92,9 +95,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // Android -- 将NV21图像保存成JPEG
         long threadId = Thread.currentThread().getId();
         // SLog.info("onPreviewFrame, threadId[%d], length[%d]", threadId, data.length);
-        boolean oneShot = false;
         if (oneShot) {
-            String absoluteFilePath = Environment.getExternalStorageDirectory() + "/1/" + System.currentTimeMillis() + ".nv21";
+            Jarbon jarbon = new Jarbon();
+            String absoluteFilePath = Environment.getExternalStorageDirectory() + "/1/" + jarbon.format("Ymd-Hisu") + ".nv21";
             SLog.info("absoluteFilePath[%s]", absoluteFilePath);
             File file = new File(absoluteFilePath);
             try {
@@ -134,5 +137,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             result = (cameraInfo.orientation - phoneDegree +360) % 360;
         }
         return result;
+    }
+
+    public void takePicture() {
+        oneShot = true;
     }
 }

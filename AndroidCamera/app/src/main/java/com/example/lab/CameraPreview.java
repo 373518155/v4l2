@@ -2,6 +2,7 @@ package com.example.lab;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.Environment;
 import android.util.AttributeSet;
@@ -49,6 +50,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         SLog.info("surfaceCreated");
         mCamera = getCameraInstance();
         try {
+            Camera.Parameters parameters = mCamera.getParameters();
+            parameters.setPreviewFormat(ImageFormat.NV21);  // 设置了这个，预览才是彩色的，不然是黑白的
+            mCamera.setParameters(parameters);
+
             int rotateDegree = getPreviewRotateDegree();
             mCamera.setDisplayOrientation(rotateDegree);
             mCamera.setPreviewDisplay(holder);

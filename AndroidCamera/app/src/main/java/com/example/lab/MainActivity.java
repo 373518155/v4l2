@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             btnRequestCameraPermission.setOnClickListener(this);
         }
 
+        findViewById(R.id.btn_test).setOnClickListener(this);
         findViewById(R.id.btn_capture).setOnClickListener(this);
         findViewById(R.id.btn_get_preview_resolution).setOnClickListener(this);
         findViewById(R.id.btn_get_picture_resolution).setOnClickListener(this);
@@ -53,6 +54,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PermissionUtil.requestStoragePermission(this);
         } else if (id == R.id.btn_request_camera_permission) {
             PermissionUtil.requestCameraPermission(this);
+        } else if (id == R.id.btn_test) {
+            Intent intent = new Intent(this, TestActivity.class);
+            startActivity(intent);
         } else if (id == R.id.btn_capture) {
             Intent intent = new Intent(this, CameraActivity.class);
             startActivity(intent);

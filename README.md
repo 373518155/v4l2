@@ -28,6 +28,10 @@ YUYV转RGB24并保存为bitmap
 
 录制连续的YUYV视频，640x480
 
+## FileOp
+
+文件操作工具类
+
 ## HelloWorld
 
 linux v4l2摄像头应用层编程
@@ -55,6 +59,15 @@ SDL2显示YUYV格式的图片(Ubuntu平台)
 ## sdl2_display_yuyv_video
 
 SDL2显示YUYV格式的视频(Ubuntu平台)
+
+## simplest_ffmpeg_muxer
+
+利用ffmpeg合成mp4文件
+
+## simplest_h264_parser
+
+简单的h264解析器 -- leixiaohua
+h264_parse.zip和h264bitstream-0.2.0.tar.gz 是更为完善的h264解析器
 
 ## toy-queue
 

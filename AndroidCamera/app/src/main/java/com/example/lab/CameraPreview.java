@@ -154,6 +154,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         SLog.info("width[%d], height[%d]", size.width, size.height);
         int previewFormat = parameters.getPreviewFormat();
         SLog.info("previewFormat[%s]", Util.translatePreviewFormat(previewFormat));
+        String focusMode = parameters.getFocusMode();
+        SLog.info("focusMode[%s]", focusMode);
+
         return null;
     }
 

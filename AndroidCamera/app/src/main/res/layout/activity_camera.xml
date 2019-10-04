@@ -10,6 +10,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
+
+    <com.example.lab.FocusIndicator
+        android:id="@+id/focus_indicator"
+        android:layout_width="@dimen/focus_indicator_width"
+        android:layout_height="@dimen/focus_indicator_height"
+        android:background="@drawable/focus_indicator_bg"
+        android:visibility="gone"
+        />
+
     <ImageView
         android:id="@+id/btn_shutter"
         android:layout_width="80dp"

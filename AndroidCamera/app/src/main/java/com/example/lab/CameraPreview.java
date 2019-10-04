@@ -34,7 +34,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         this(context, attrs, 0);
     }
 
-    public CameraPreview(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CameraPreview(final Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         mHolder = getHolder();
@@ -49,6 +49,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 int x = (int) event.getX();
                 int y = (int) event.getY();
                 SLog.info("x[%d], y[%s]", x, y);
+
+                CameraActivity cameraActivity = (CameraActivity) context;
+                cameraActivity.onTouchFocus(x, y);
 
                 focusOnTouch(x, y);
 

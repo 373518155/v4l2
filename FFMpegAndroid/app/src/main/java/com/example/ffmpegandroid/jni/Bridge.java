@@ -2,8 +2,8 @@ package com.example.ffmpegandroid.jni;
 
 public class Bridge {
     static {
-        System.loadLibrary("ffmpeg");
+        System.loadLibrary("bridge");
     }
 
-    public native String hello();
+    public native String stringFromJNI();
 }

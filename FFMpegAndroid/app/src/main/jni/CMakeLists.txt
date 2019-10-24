@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.4.1)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
-message("hello235")
+message(FATAL_ERROR "i am a debug message^_^")
 
 add_library( # Sets the name of the library.
              bridge

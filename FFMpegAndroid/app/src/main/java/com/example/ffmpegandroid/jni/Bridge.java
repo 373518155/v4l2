@@ -6,4 +6,5 @@ public class Bridge {
     }
 
     public native String stringFromJNI();
+    public native String getAVFormatInfo();
 }

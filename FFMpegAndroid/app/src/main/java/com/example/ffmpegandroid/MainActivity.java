@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_test) {
-            Toast.makeText(this, new Bridge().stringFromJNI(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, new Bridge().getAVFormatInfo(), Toast.LENGTH_SHORT).show();
         }
     }
 }

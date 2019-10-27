@@ -5,7 +5,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/btn_check_libx264"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="检查libx264是否存在"
+        />
+
+    <Button
+        android:id="@+id/btn_check_libfdk_aac"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="检查libfdk_aac是否存在"
+        />
 
     <Button
         android:id="@+id/btn_test"

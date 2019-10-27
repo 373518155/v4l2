@@ -14,6 +14,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        findViewById(R.id.btn_check_libx264).setOnClickListener(this);
+        findViewById(R.id.btn_check_libfdk_aac).setOnClickListener(this);
         findViewById(R.id.btn_test).setOnClickListener(this);
     }
 
@@ -21,7 +23,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_test) {
-            Toast.makeText(this, new Bridge().getAVFormatInfo(), Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, new Bridge().getAVFormatInfo(), Toast.LENGTH_SHORT).show();
+            SLog.info("support[%s]", new Bridge().getAVCodecInfo());
+        } else if (id == R.id.btn_check_libx264) {
+            SLog.info("exists[%s]", new Bridge().isEncoderExists("libx264"));
+            Toast.makeText(this, String.valueOf(new Bridge().isEncoderExists("libx264")), Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.btn_check_libfdk_aac) {
+            SLog.info("exists[%s]", new Bridge().isEncoderExists("libfdk_aac"));
+            Toast.makeText(this, String.valueOf(new Bridge().isEncoderExists("libfdk_aac")), Toast.LENGTH_SHORT).show();
         }
     }
 }

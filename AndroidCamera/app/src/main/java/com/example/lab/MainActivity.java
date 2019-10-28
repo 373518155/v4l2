@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.example.lab.jni.Bridge;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.interfaces.OnSelectListener;
 
@@ -45,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_get_picture_format).setOnClickListener(this);
         findViewById(R.id.btn_get_preview_format).setOnClickListener(this);
         findViewById(R.id.btn_get_preview_fps_range).setOnClickListener(this);
+        findViewById(R.id.btn_check_libx264).setOnClickListener(this);
+        findViewById(R.id.btn_check_libfdk_aac).setOnClickListener(this);
     }
 
     @Override
@@ -81,6 +85,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (id == R.id.btn_get_preview_fps_range) {
             String[] result = getParameters(ParameterType.PREVIEW_FPS_RANGE);
             showResultPopup("預覽幀率", result, -1);
+        } else if (id == R.id.btn_check_libx264) {
+            Toast.makeText(this, String.valueOf(new Bridge().isEncoderExists("libx264")), Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.btn_check_libfdk_aac) {
+            Toast.makeText(this, String.valueOf(new Bridge().isEncoderExists("libfdk_aac")), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -166,8 +174,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         return stringArray;
     }
-
-
 }
 
 

@@ -33,7 +33,7 @@ public class SLog {
     }
 
 
-    public static void hex(byte[] data) {
+    public static void hex(byte[] data, int len) {
         StackTraceElement[] traceArray = Thread.currentThread().getStackTrace();
 
         StackTraceElement trace = traceArray[2];  // 在java中固定为2
@@ -50,14 +50,17 @@ public class SLog {
         if (data == null) {
             dataLengthStr = "null";
         } else {
-            dataLengthStr = String.valueOf(data.length);
+            if (data.length < len) {
+                len = data.length;
+            }
+            dataLengthStr = String.valueOf(len);
         }
 
         String header = String.format("[%s][%s][%s]data-length: %s Byte(s)\n", timestamp, fileName, lineNumber, dataLengthStr);
         System.out.printf(header);
 
 
-        if (data == null || data.length == 0) {
+        if (data == null || len == 0) {
             return;
         }
 
@@ -66,12 +69,11 @@ public class SLog {
         System.out.printf(table_border);
 
         int offset = 0;
-        int dataLength = data.length;
-        while (offset < dataLength) {
+        while (offset < len) {
             System.out.printf("| %06d | ", offset);
             /* 打印hex部分 */
             for (int i = 0; i < 16; ++i) {
-                if (offset + i < dataLength) {
+                if (offset + i < len) {
                     System.out.printf("%02X ", data[offset + i]);
                 } else {
                     System.out.printf("   "); /* 超出真实数据长度用空白代替 */
@@ -81,7 +83,7 @@ public class SLog {
 
             /* 打印ascii部分 */
             for (int i = 0; i < 16; ++i) {
-                if (offset + i < dataLength) {
+                if (offset + i < len) {
                     char ch = byteToChar(data[offset + i]);
                     if (isPrint(ch)) {
                         System.out.printf("%c", ch);

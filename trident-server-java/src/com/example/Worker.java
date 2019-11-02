@@ -91,13 +91,21 @@ public class Worker implements Runnable {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                boolean ok = true;
-                                while (ok) {
+                                while (true) {
                                     try {
                                         int n = targetInputStream.read(targetInputBuffer);
+                                        if (n == 0) {
+                                            continue;
+                                        }
+                                        if (n < 0) {
+                                            break;
+                                        }
 
+                                        SLog.hex(targetInputBuffer, n);
+
+                                        outputStream.write(targetInputBuffer, 0, n);
                                     } catch (Exception e) {
-
+                                        break;
                                     }
                                 }
 

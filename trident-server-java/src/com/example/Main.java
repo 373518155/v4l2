@@ -9,6 +9,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+
+/*
+IDEA 如何打jar包
+https://blog.csdn.net/fengfengchen95/article/details/79915346
+ */
+
 public class Main {
     // 線程等待隊列大小
     private static final int THREAD_QUEUE_SIZE = 1024;
@@ -22,6 +28,10 @@ public class Main {
         try {
 
             File cfgFile = new File("config.txt");
+            if (!cfgFile.exists()) {
+                SLog.info("Error!cfgFile not exists");
+                return;
+            }
             byte[] cfgContent = Files.readAllBytes(cfgFile.toPath());
             String config = new String(cfgContent);
             String[] configArr = config.split(":");

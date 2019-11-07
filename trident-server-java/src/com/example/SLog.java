@@ -34,6 +34,9 @@ public class SLog {
 
 
     public static void hex(byte[] data, int len) {
+        if (true) {
+            return;
+        }
         StackTraceElement[] traceArray = Thread.currentThread().getStackTrace();
 
         StackTraceElement trace = traceArray[2];  // 在java中固定为2

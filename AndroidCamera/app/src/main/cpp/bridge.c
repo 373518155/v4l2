@@ -11,9 +11,15 @@
 #include "libavformat/avformat.h"
 #include "libavfilter/avfilter.h"
 #include "libavutil/log.h"
+#include "libavutil/imgutils.h"
+
+#include "bridge.h"
 
 #define TAG "SLog"
 #define slog(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+
+
+MP4EncoderInfo mp4EncoderInfo;
 
 /*
  * 测试
@@ -154,6 +160,9 @@ Java_com_example_lab_jni_Bridge_encodeMP4Start(JNIEnv *env, jobject instance, js
 
     // TODO
 
+    InitEncoder(mp4Path, width, height);
+    EncodeStart();
+
     (*env)->ReleaseStringUTFChars(env, mp4Path_, mp4Path);
 }
 
@@ -182,13 +191,122 @@ Java_com_example_lab_jni_Bridge_encodeMP4Stop(JNIEnv *env, jobject instance) {
  * @param height
  */
 JNIEXPORT void JNICALL
-Java_com_example_lab_jni_Bridge_onPreviewFrame(JNIEnv *env, jobject instance, jbyteArray yuvData_,
+Java_com_example_lab_jni_Bridge_onPreviewFrame(JNIEnv *env, jobject instance, jbyteArray yuvArray,
                                                jint width, jint height) {
-    jbyte *yuvData = (*env)->GetByteArrayElements(env, yuvData_, NULL);
+    jbyte *yuv420Buffer = (*env)->GetByteArrayElements(env, yuvArray, NULL);
 
     // TODO
+    EncodeBuffer((unsigned char *) yuv420Buffer);
 
-    (*env)->ReleaseByteArrayElements(env, yuvData_, yuvData, 0);
+    (*env)->ReleaseByteArrayElements(env, yuvArray, yuv420Buffer, 0);
+}
+
+void InitEncoder(const char *mp4Path, int width, int height) {
+    strcpy(mp4EncoderInfo.mp4Path, mp4Path);
+    mp4EncoderInfo.width = width;
+    mp4EncoderInfo.height = height;
 }
 
 
+
+void EncodeStart() {
+    //1. 注册所有组件
+    av_register_all();
+    //2. 初始化输出码流的AVFormatContext
+    avformat_alloc_output_context2(&mp4EncoderInfo.pFormatCtx, NULL, NULL, mp4EncoderInfo.mp4Path);
+
+    //3. 打开待输出的视频文件
+    if (avio_open(&mp4EncoderInfo.pFormatCtx->pb, mp4EncoderInfo.mp4Path, AVIO_FLAG_READ_WRITE)) {
+        slog("open output file failed");
+        return;
+    }
+    //4. 初始化视频码流
+    mp4EncoderInfo.pStream = avformat_new_stream(mp4EncoderInfo.pFormatCtx, NULL);
+    if (mp4EncoderInfo.pStream == NULL) {
+        slog("allocating output stream failed");
+        return;
+    }
+    //5. 寻找编码器并打开编码器
+    mp4EncoderInfo.pCodec = avcodec_find_encoder(AV_CODEC_ID_MPEG4);
+    if (!mp4EncoderInfo.pCodec) {
+        slog("could not find encoder");
+        return;
+    }
+
+    //6. 分配编码器并设置参数
+    mp4EncoderInfo.pCodecCtx = avcodec_alloc_context3(mp4EncoderInfo.pCodec);
+    mp4EncoderInfo.pCodecCtx->codec_id = mp4EncoderInfo.pCodec->id;
+    mp4EncoderInfo.pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
+    mp4EncoderInfo.pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+    mp4EncoderInfo.pCodecCtx->width = mp4EncoderInfo.height;
+    mp4EncoderInfo.pCodecCtx->height = mp4EncoderInfo.width;
+    mp4EncoderInfo.pCodecCtx->time_base.num = 1;
+    mp4EncoderInfo.pCodecCtx->time_base.den = 25;
+    mp4EncoderInfo.pCodecCtx->bit_rate = 400000;
+    mp4EncoderInfo.pCodecCtx->gop_size = 12;
+
+
+    //将AVCodecContext的成员复制到AVCodecParameters结构体
+    avcodec_parameters_from_context(mp4EncoderInfo.pStream->codecpar, mp4EncoderInfo.pCodecCtx);
+    AVRational avRational = {1, 25};
+    av_stream_set_r_frame_rate(mp4EncoderInfo.pStream, avRational);
+
+    //7. 打开编码器
+    if (avcodec_open2(mp4EncoderInfo.pCodecCtx, mp4EncoderInfo.pCodec, NULL) < 0) {
+        slog("open encoder fail!");
+        return;
+    }
+
+    //输出格式信息
+    av_dump_format(mp4EncoderInfo.pFormatCtx, 0, mp4EncoderInfo.mp4Path, 1);
+
+    //初始化帧
+    mp4EncoderInfo.pFrame = av_frame_alloc();
+    mp4EncoderInfo.pFrame->width = mp4EncoderInfo.pCodecCtx->width;
+    mp4EncoderInfo.pFrame->height = mp4EncoderInfo.pCodecCtx->height;
+    mp4EncoderInfo.pFrame->format = mp4EncoderInfo.pCodecCtx->pix_fmt;
+    int bufferSize = av_image_get_buffer_size(mp4EncoderInfo.pCodecCtx->pix_fmt, mp4EncoderInfo.pCodecCtx->width,
+                                              mp4EncoderInfo.pCodecCtx->height, 1);
+    mp4EncoderInfo.pFrameBuffer = (uint8_t *) av_malloc(bufferSize);
+    av_image_fill_arrays(mp4EncoderInfo.pFrame->data, mp4EncoderInfo.pFrame->linesize, mp4EncoderInfo.pFrameBuffer, mp4EncoderInfo.pCodecCtx->pix_fmt,
+                         mp4EncoderInfo.pCodecCtx->width, mp4EncoderInfo.pCodecCtx->height, 1);
+
+    AVDictionary *opt = 0;
+    //H.264
+    if (mp4EncoderInfo.pCodecCtx->codec_id == AV_CODEC_ID_H264) {
+        av_dict_set_int(&opt, "video_track_timescale", 25, 0);
+        av_dict_set(&opt, "preset", "slow", 0);
+        av_dict_set(&opt, "tune", "zerolatency", 0);
+    }
+    //8. 写文件头
+    avformat_write_header(mp4EncoderInfo.pFormatCtx, &opt);
+
+    //创建已编码帧
+    av_new_packet(&mp4EncoderInfo.avPacket, bufferSize * 3);
+
+    //标记正在转换
+    mp4EncoderInfo.transform = true;
+
+}
+
+void EncodeBuffer(unsigned char *nv21Buffer) {
+
+    uint8_t *i420_y = mp4EncoderInfo.pFrameBuffer;
+    uint8_t *i420_u = mp4EncoderInfo.pFrameBuffer + mp4EncoderInfo.width * mp4EncoderInfo.height;
+    uint8_t *i420_v = mp4EncoderInfo.pFrameBuffer + mp4EncoderInfo.width * mp4EncoderInfo.height * 5 / 4;
+
+    //NV21转I420
+    libyuv::ConvertToI420(nv21Buffer, mp4EncoderInfo.width * mp4EncoderInfo.height, i420_y, mp4EncoderInfo.height, i420_u, mp4EncoderInfo.height / 2, i420_v,
+                          mp4EncoderInfo.height / 2, 0, 0, mp4EncoderInfo.width, mp4EncoderInfo.height, mp4EncoderInfo.width, mp4EncoderInfo.height, libyuv::kRotate270,
+                          libyuv::FOURCC_NV21);
+
+    mp4EncoderInfo.pFrame->data[0] = i420_y;
+    mp4EncoderInfo.pFrame->data[1] = i420_u;
+    mp4EncoderInfo.pFrame->data[2] = i420_v;
+
+    //AVFrame PTS
+    mp4EncoderInfo.pFrame->pts = mp4EncoderInfo.index++;
+
+    //编码数据
+    EncodeFrame(mp4EncoderInfo.pCodecCtx, mp4EncoderInfo.pFrame, &mp4EncoderInfo.avPacket);
+}

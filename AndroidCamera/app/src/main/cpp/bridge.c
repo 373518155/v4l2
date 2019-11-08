@@ -104,18 +104,19 @@ Java_com_example_lab_jni_Bridge_getAVCodecInfo
     return (*env)->NewStringUTF(env, info);
 }
 
-
 /**
  * 根据编码器名称判断编码器是否存在
  * @param env
  * @param obj
- * @param jstrEncoderName 编码器名称，比如  libx264、libfdk_aac
+ * @param encoderName_ 编码器名称，比如  libx264、libfdk_aac
  * @return
  */
 JNIEXPORT jboolean JNICALL
-Java_com_example_lab_jni_Bridge_isEncoderExists(JNIEnv * env, jobject obj, jstring jstrEncoderName) {
-    const char *encoderName = (*env)->GetStringUTFChars(env, jstrEncoderName, 0);
+Java_com_example_lab_jni_Bridge_isEncoderExists(JNIEnv *env, jobject instance,
+                                                jstring encoderName_) {
+    const char *encoderName = (*env)->GetStringUTFChars(env, encoderName_, 0);
 
+    // TODO
     jboolean result;
     avcodec_register_all();
 
@@ -132,13 +133,62 @@ Java_com_example_lab_jni_Bridge_isEncoderExists(JNIEnv * env, jobject obj, jstri
         result = JNI_FALSE;
     }
 
-
-    (*env)->ReleaseStringUTFChars(env, jstrEncoderName, encoderName);
-
+    (*env)->ReleaseStringUTFChars(env, encoderName_, encoderName);
     return result;
 }
 
 
 
+/**
+ * 编码开始
+ * @param env
+ * @param instance
+ * @param mp4Path_
+ * @param width
+ * @param height
+ */
+JNIEXPORT void JNICALL
+Java_com_example_lab_jni_Bridge_encodeMP4Start(JNIEnv *env, jobject instance, jstring mp4Path_,
+                                               jint width, jint height) {
+    const char *mp4Path = (*env)->GetStringUTFChars(env, mp4Path_, 0);
+
+    // TODO
+
+    (*env)->ReleaseStringUTFChars(env, mp4Path_, mp4Path);
+}
+
+
+
+
+/**
+ * 编码结束
+ * @param env
+ * @param instance
+ */
+JNIEXPORT void JNICALL
+Java_com_example_lab_jni_Bridge_encodeMP4Stop(JNIEnv *env, jobject instance) {
+
+    // TODO
+
+}
+
+
+/**
+ * 处理相机回调的预览数据
+ * @param env
+ * @param instance
+ * @param yuvData_
+ * @param width
+ * @param height
+ */
+JNIEXPORT void JNICALL
+Java_com_example_lab_jni_Bridge_onPreviewFrame(JNIEnv *env, jobject instance, jbyteArray yuvData_,
+                                               jint width, jint height) {
+    jbyte *yuvData = (*env)->GetByteArrayElements(env, yuvData_, NULL);
+
+    // TODO
+
+    (*env)->ReleaseByteArrayElements(env, yuvData_, yuvData, 0);
+}
 
 

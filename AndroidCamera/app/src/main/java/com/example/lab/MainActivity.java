@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_get_picture_format).setOnClickListener(this);
         findViewById(R.id.btn_get_preview_format).setOnClickListener(this);
         findViewById(R.id.btn_get_preview_fps_range).setOnClickListener(this);
+        findViewById(R.id.btn_get_preview_frame_rate).setOnClickListener(this);
         findViewById(R.id.btn_check_libx264).setOnClickListener(this);
         findViewById(R.id.btn_check_libfdk_aac).setOnClickListener(this);
     }
@@ -84,6 +85,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             showResultPopup("預覽格式", result, -1);
         } else if (id == R.id.btn_get_preview_fps_range) {
             String[] result = getParameters(ParameterType.PREVIEW_FPS_RANGE);
+            showResultPopup("預覽幀率范圍", result, -1);
+        } else if (id == R.id.btn_get_preview_frame_rate) {
+            String[] result = getParameters(ParameterType.PREVIEW_FRAME_RATE);
             showResultPopup("預覽幀率", result, -1);
         } else if (id == R.id.btn_check_libx264) {
             Toast.makeText(this, String.valueOf(new Bridge().isEncoderExists("libx264")), Toast.LENGTH_SHORT).show();
@@ -133,7 +137,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String item = String.format("%.2f(min) - %.2f(max)", ((float) fpsRange[0]) / 1000, ((float) fpsRange[1]) / 1000);
                 result.add(item);
             }
+        } else if (parameterType == ParameterType.PREVIEW_FRAME_RATE) {
+            List<Integer> frameRateList = parameters.getSupportedPreviewFrameRates();
+            for (Integer frameRate : frameRateList) {
+                result.add(String.valueOf(frameRate));
+            }
         }
+
 
 
         camera.release();

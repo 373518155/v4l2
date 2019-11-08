@@ -123,6 +123,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             parameters.setPreviewFormat(ImageFormat.NV21);  // 设置了这个，预览才是彩色的，不然是黑白的
             Camera.Size size = parameters.getPreviewSize();
             SLog.info("width[%d], height[%d]", size.width, size.height);
+
+            parameters.setPreviewFpsRange(15, 15);
+            parameters.setPreviewFrameRate(15);
+
             mCamera.setParameters(parameters);
 
             int rotateDegree = getPreviewRotateDegree();
@@ -156,6 +160,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         SLog.info("previewFormat[%s]", Util.translatePreviewFormat(previewFormat));
         String focusMode = parameters.getFocusMode();
         SLog.info("focusMode[%s]", focusMode);
+        int[] previewFpsRange = new int[2];
+        parameters.getPreviewFpsRange(previewFpsRange);
+        SLog.info("previewFpsRange[%d - %d]", previewFpsRange[0], previewFpsRange[1]);
+        int previewFrameRate = parameters.getPreviewFrameRate();
+        SLog.info("previewFrameRate[%d]", previewFrameRate);
 
         return null;
     }

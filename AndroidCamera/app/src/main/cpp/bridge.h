@@ -12,6 +12,8 @@ void InitEncoder(const char *mp4Path, int width, int height);
 void EncodeStart();
 
 void EncodeBuffer(unsigned char *nv21Buffer);
+int EncodeFrame(AVCodecContext *pCodecCtx, AVFrame *pFrame, AVPacket *avPacket);
+int EncodeFrame(AVCodecContext *pCodecCtx, AVFrame *pFrame, AVPacket *avPacket);
 
 typedef struct {
     char mp4Path[256];

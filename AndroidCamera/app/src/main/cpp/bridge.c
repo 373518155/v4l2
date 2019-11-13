@@ -178,6 +178,33 @@ JNIEXPORT void JNICALL
 Java_com_example_lab_jni_Bridge_encodeMP4Stop(JNIEnv *env, jobject instance) {
 
     // TODO
+    //标记转换结束
+    mp4EncoderInfo.transform = false;
+
+    int result = EncodeFrame(mp4EncoderInfo.pCodecCtx, NULL, &mp4EncoderInfo.avPacket);
+    if (result >= 0) {
+        //封装文件尾
+        av_write_trailer(mp4EncoderInfo.pFormatCtx);
+        //释放内存
+        if (mp4EncoderInfo.pCodecCtx != NULL) {
+            avcodec_close(mp4EncoderInfo.pCodecCtx);
+            avcodec_free_context(&mp4EncoderInfo.pCodecCtx);
+            mp4EncoderInfo.pCodecCtx = NULL;
+        }
+        if (mp4EncoderInfo.pFrame != NULL) {
+            av_free(mp4EncoderInfo.pFrame);
+            mp4EncoderInfo.pFrame = NULL;
+        }
+        if (mp4EncoderInfo.pFrameBuffer != NULL) {
+            av_free(mp4EncoderInfo.pFrameBuffer);
+            mp4EncoderInfo.pFrameBuffer = NULL;
+        }
+        if (mp4EncoderInfo.pFormatCtx != NULL) {
+            avio_close(mp4EncoderInfo.pFormatCtx->pb);
+            avformat_free_context(mp4EncoderInfo.pFormatCtx);
+            mp4EncoderInfo.pFormatCtx = NULL;
+        }
+    }
 
 }
 
@@ -310,3 +337,28 @@ void EncodeBuffer(unsigned char *nv21Buffer) {
     //编码数据
     EncodeFrame(mp4EncoderInfo.pCodecCtx, mp4EncoderInfo.pFrame, &mp4EncoderInfo.avPacket);
 }
+
+int EncodeFrame(AVCodecContext *pCodecCtx, AVFrame *pFrame, AVPacket *avPacket) {
+    int ret = avcodec_send_frame(pCodecCtx, pFrame);
+    if (ret < 0) {
+        //failed to send frame for encoding
+        return -1;
+    }
+    while (!ret) {
+        ret = avcodec_receive_packet(pCodecCtx, avPacket);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            return 0;
+        } else if (ret < 0) {
+            //error during encoding
+            return -1;
+        }
+        //printf("Write frame %d, size=%d\n", avPacket->pts, avPacket->size);
+        avPacket->stream_index = mp4EncoderInfo.pStream->index;
+        av_packet_rescale_ts(avPacket, pCodecCtx->time_base, mp4EncoderInfo.pStream->time_base);
+        avPacket->pos = -1;
+        av_interleaved_write_frame(mp4EncoderInfo.pFormatCtx, avPacket);
+        av_packet_unref(avPacket);
+    }
+    return 0;
+}
+

@@ -1,6 +1,6 @@
 package com.example.lab;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * 通用回调接口

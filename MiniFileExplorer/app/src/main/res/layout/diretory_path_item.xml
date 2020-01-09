@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+    android:id="@+id/tv_directory"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:maxWidth="100dp"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:lines="1"
+    android:ellipsize="end"
+    android:textSize="13sp"
+    android:textColor="@android:color/white"
+    android:text="新建文件夹新建文件夹新建文件夹新建文件夹新建文件夹"
+    android:background="@drawable/directory_path_button_bg"
+    />
+

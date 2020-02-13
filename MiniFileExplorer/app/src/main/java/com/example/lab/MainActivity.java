@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Environment;
 import android.view.View;
+import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.lxj.xpopup.XPopup;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.btn_test).setOnClickListener(this);
         findViewById(R.id.btn_home).setOnClickListener(this);
+        findViewById(R.id.btn_go_up).setOnClickListener(this);
 
         PermissionUtil.requestStoragePermission(this);
 
@@ -97,6 +99,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.btn_test) {
         } else if (id == R.id.btn_home) {
             openHomeDirectory();
+        } else if (id == R.id.btn_go_up) {
+            boolean success = goUp();
+            if (!success) {
+                Toast.makeText(this, "已经是最顶层目录", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -172,5 +179,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } catch (EasyJSONException e) {
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     * 返回上一层目录
+     * @return  成功返回true, 失败返回false
+     */
+    private boolean goUp() {
+        String parentPath = currDirectory.getParent();
+        SLog.info("externalStoragePath[%s], parentPath[%s]", externalStoragePath, parentPath);
+
+        if (externalStoragePath.length() > parentPath.length()) {
+            return false;
+        }
+
+        openDirectory(new File(parentPath));
+        return true;
     }
 }

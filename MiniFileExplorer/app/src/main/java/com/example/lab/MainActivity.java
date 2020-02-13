@@ -9,18 +9,26 @@ import android.os.Environment;
 import android.view.View;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.lxj.xpopup.XPopup;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import cn.snailpad.easyjson.EasyJSONException;
+import cn.snailpad.easyjson.EasyJSONObject;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, SimpleCallback {
     RecyclerView rvList;
     FSAdapter fsAdapter;
 
     RecyclerView rvPathList;
     DirectoryPathAdapter directoryPathAdapter;
+
+    File currDirectory; // 当前所在的路径
 
     List<FSItem> fsItemList = new ArrayList<>();
     List<String> directoryPathList = new ArrayList<>();
@@ -48,6 +56,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (fsItem.type == FSItem.TYPE_FOLDER) {
                     openDirectory(new File(fsItem.absolutePath));
                 }
+            }
+        });
+        fsAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+            @Override
+            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+                FSItem fsItem = fsItemList.get(position);
+                SLog.info("absolutePath[%s]", fsItem.absolutePath);
+
+                new XPopup.Builder(MainActivity.this)
+                        // 如果不加这个，评论弹窗会移动到软键盘上面
+                        .moveUpToKeyboard(false)
+                        .asCustom(new FileExplorerBottomMenuPopup(MainActivity.this, fsItem.absolutePath, MainActivity.this))
+                        .show();
             }
         });
         rvList.setLayoutManager(new LinearLayoutManager(this));
@@ -83,7 +104,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         openDirectory(externalStorageDirectory);
     }
 
+    private void refresh() {
+        openDirectory(currDirectory);
+    }
+
     private void openDirectory(File directory) {
+        currDirectory = directory;
         String absolutePath = directory.getAbsolutePath();
         directoryPathList.clear();
         SLog.info("externalStoragePath[%s], absolutePath[%s]", externalStoragePath, absolutePath);
@@ -100,6 +126,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         fsItemList.clear();
         File[] files = directory.listFiles();
+
+        // 按名称升序排序
+        Arrays.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                String filename1 = o1.getName();
+                String filename2 = o2.getName();
+
+                return filename1.compareToIgnoreCase(filename2);
+            }
+        });
+
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FSItem fsItem = new FSItem();
@@ -118,5 +156,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         fsAdapter.setNewData(fsItemList);
+    }
+
+    @Override
+    public void onSimpleCall(Object data) {
+        String dataStr = (String) data;
+        EasyJSONObject dataObj = (EasyJSONObject) EasyJSONObject.parse(dataStr);
+
+        try {
+            int action = dataObj.getInt("action");
+            if (action == FileExplorerAction.DELETE.ordinal()) {
+                // 如果是删除了文件/文件夹，则刷新当前目录
+                refresh();
+            }
+        } catch (EasyJSONException e) {
+            e.printStackTrace();
+        }
     }
 }

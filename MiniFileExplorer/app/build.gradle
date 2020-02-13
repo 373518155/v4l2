@@ -28,4 +28,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.yanzhenjie:permission:2.0.0-rc12'
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.46'
+    implementation 'com.lxj:xpopup:1.8.10-x'
+    implementation 'cn.snailpad:EasyJSON:1.0.18'
 }

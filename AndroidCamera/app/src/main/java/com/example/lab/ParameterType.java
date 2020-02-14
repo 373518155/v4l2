@@ -32,4 +32,8 @@ public enum ParameterType {
      * 预览帧率范围
      */
     PREVIEW_FPS_RANGE,
+    /**
+     * 预览帧率
+     */
+    PREVIEW_FRAME_RATE,
 }

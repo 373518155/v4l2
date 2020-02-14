@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+     類型A: 4條邊框都有
+     類型B: 底邊框和右邊框
+     類型C: 右邊框
+     類型D: 底邊框
+     -->
+    <item android:top="-1dp"
+        android:left="-1dp"
+        android:right="-1dp">
+        <shape>
+            <solid android:color="@android:color/transparent"/>
+            <stroke
+                android:width="0.5dp"
+                android:color="@color/md_grey_400"/>
+        </shape>
+    </item>
+</layer-list>

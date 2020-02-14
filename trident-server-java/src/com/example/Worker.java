@@ -17,8 +17,12 @@ public class Worker implements Runnable {
     int port;      // 代理服务器的端口
 
     Socket targetSocket; // 与目标服务器的socket连接
+
     InputStream targetInputStream;
     OutputStream targetOutputStream;
+
+    InputStream inputStream;
+    OutputStream outputStream;
 
     /**
      * Constructor
@@ -39,10 +43,9 @@ public class Worker implements Runnable {
 
             byte[] inputBuffer = new byte[BUFFER_SIZE];
             byte[] outputBuffer = new byte[BUFFER_SIZE];
-            byte[] targetInputBuffer = new byte[BUFFER_SIZE];
 
-            InputStream inputStream = socket.getInputStream();
-            OutputStream outputStream = socket.getOutputStream();
+            inputStream = socket.getInputStream();
+            outputStream = socket.getOutputStream();
 
             while (true) {
                 int n = inputStream.read(inputBuffer);
@@ -55,12 +58,22 @@ public class Worker implements Runnable {
                 }
                 SLog.hex(inputBuffer, n);
                 if (status == SOCKS5_STATUS_INIT) {
-                    if (inputBuffer[0] == 0x05 && inputBuffer[1] == 0x01 && inputBuffer[2] == 0x00) { // 无需认证
-                        status = SOCKS5_STATUS_CONNECTING;
-                        SLog.info("建立socks5连接");
-                        outputBuffer[0] = 0x05;
-                        outputBuffer[1] = 0x00; // 无需认证
-                        outputStream.write(outputBuffer, 0, 2);
+                    if (inputBuffer[0] == 0x05) { // 无需认证
+                        int methodCount = inputBuffer[1];
+                        int i;
+                        for (i = 0; i < methodCount; i++) {
+                            if (inputBuffer[2 + i] == 0x00) { // 目前僅支持不需要認證的方式
+                                status = SOCKS5_STATUS_CONNECTING;
+                                SLog.info("建立socks5连接");
+                                outputBuffer[0] = 0x05;
+                                outputBuffer[1] = 0x00; // 无需认证
+                                outputStream.write(outputBuffer, 0, 2);
+                                break;
+                            }
+                        }
+                        if (i == methodCount) {
+                            SLog.info("Error!不支持的认证方式");
+                        }
                     }
                 } else if (status == SOCKS5_STATUS_CONNECTING) {
                     SLog.info("处理命令");
@@ -75,44 +88,33 @@ public class Worker implements Runnable {
                     }
 
                     // ADDRESS_TYPE 目标服务器地址类型
-                    if (inputBuffer[3] == 0x01) {
-                        SLog.info("IP V4地址");
+                    if (inputBuffer[3] == 0x01 || inputBuffer[3] == 0x03) {
+                        String host;
+                        int port;
+                        if (inputBuffer[3] == 0x01) {
+                            SLog.info("IPv4 Address");
 
-                        String ip = String.format("%d.%d.%d.%d",
-                                Util.byteToUint(inputBuffer[4]), Util.byteToUint(inputBuffer[5]), Util.byteToUint(inputBuffer[6]), Util.byteToUint(inputBuffer[7]));
-                        int port = 256 * Util.byteToUint(inputBuffer[8]) + Util.byteToUint(inputBuffer[9]);
-                        SLog.info("目标服务器地址ip[%s], port[%d]", ip, port);
+                            host = String.format("%d.%d.%d.%d",
+                                    Util.byteToUint(inputBuffer[4]), Util.byteToUint(inputBuffer[5]), Util.byteToUint(inputBuffer[6]), Util.byteToUint(inputBuffer[7]));
+                            port = 256 * Util.byteToUint(inputBuffer[8]) + Util.byteToUint(inputBuffer[9]);
 
-                        targetSocket = new Socket(ip,port); // 连接到目标服务器的socket
+                        } else {
+                            SLog.info("Domain Name Address"); // 域名地址的第1个字节为域名长度，剩下字节为域名名称字节数组
 
-                        targetInputStream = targetSocket.getInputStream();
-                        targetOutputStream = targetSocket.getOutputStream();
+                            int domainNameLen = inputBuffer[4];
 
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                while (true) {
-                                    try {
-                                        int n = targetInputStream.read(targetInputBuffer);
-                                        if (n == 0) {
-                                            continue;
-                                        }
-                                        if (n < 0) {
-                                            break;
-                                        }
-
-                                        SLog.hex(targetInputBuffer, n);
-
-                                        outputStream.write(targetInputBuffer, 0, n);
-                                    } catch (Exception e) {
-                                        break;
-                                    }
-                                }
-
-
+                            byte[] domainNameArr = new byte[domainNameLen];
+                            for (int i = 0; i < domainNameLen; i++) {
+                                domainNameArr[i] = inputBuffer[5 + i];
                             }
-                        }).start();
 
+                            host = new String(domainNameArr);
+                            port = 256 * Util.byteToUint(inputBuffer[5 + domainNameLen]) + Util.byteToUint(inputBuffer[5 + domainNameLen + 1]);
+                        }
+
+                        SLog.info("目标服务器地址host[%s], port[%d]", host, port);
+
+                        connectToTarget(host, port);
 
                         /*
                         代理服务器连接目标主机，并返回结果给客户端
@@ -143,17 +145,54 @@ public class Worker implements Runnable {
                         outputStream.write(outputBuffer, 0, 10);
 
                         status = SOCKS5_STATUS_CONNECTED;
-                    } else if (inputBuffer[3] == 0x03) {
-                        SLog.info("域名地址"); // 域名地址的第1个字节为域名长度，剩下字节为域名名称字节数组
                     } else if (inputBuffer[3] == 0x04) {
-                        SLog.info("IP V6地址");
+                        SLog.info("IPv6 Address");
                     }
                 } else if (status == SOCKS5_STATUS_CONNECTED) {
                     targetOutputStream.write(inputBuffer, 0, n);
-
                 }
             }
 
+        } catch (Exception e) {
+            SLog.info("Error!%s", e.getMessage());
+        }
+    }
+
+    /**
+     * 连接到目标服务器
+     * @param host 目标服务器的IP
+     * @param port 目标服务器的端口
+     */
+    private void connectToTarget(String host, int port) {
+        byte[] targetInputBuffer = new byte[BUFFER_SIZE];
+        try {
+            targetSocket = new Socket(host, port); // 连接到目标服务器的socket
+
+            targetInputStream = targetSocket.getInputStream();
+            targetOutputStream = targetSocket.getOutputStream();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+                            int n = targetInputStream.read(targetInputBuffer);
+                            if (n == 0) {
+                                continue;
+                            }
+                            if (n < 0) {
+                                break;
+                            }
+
+                            SLog.hex(targetInputBuffer, n);
+
+                            outputStream.write(targetInputBuffer, 0, n);
+                        } catch (Exception e) {
+                            break;
+                        }
+                    }
+                }
+            }).start();
         } catch (Exception e) {
             SLog.info("Error!%s", e.getMessage());
         }

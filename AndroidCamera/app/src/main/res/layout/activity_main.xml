@@ -89,6 +89,12 @@
             android:id="@+id/btn_get_preview_fps_range"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="获取預覽幀率范圍"
+            />
+        <Button
+            android:id="@+id/btn_get_preview_frame_rate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="获取預覽幀率"
             />
         <Button

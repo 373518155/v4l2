@@ -32,6 +32,6 @@ public class SLog {
         String lineNumber = String.format("%05d", trace.getLineNumber());
 
         String logContent = String.format("[%s][%s][%s]%s", timestamp, fileName, lineNumber, content);
-        Log.e("SLog", logContent);
+        Log.println(Log.ASSERT, "SLog", logContent);
     }
 }

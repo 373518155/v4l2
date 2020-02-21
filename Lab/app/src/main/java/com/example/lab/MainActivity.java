@@ -12,14 +12,18 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * loadMore实验
+ */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, BaseQuickAdapter.RequestLoadMoreListener {
     RecyclerView rvList;
     SimpleAdapter simpleAdapter;
 
-    int currPage = 0;
+    int currPage = 0; // 当前加载了多少页数据
     boolean hasMore = true;
-    public static final int MAX_PAGE = 3;
-    public static final int SCREEN_PER_PAGE = 1;
+    public static int MAX_PAGE = 3; // 数据总数，最初时只有3页数据
+    public static final int SCREEN_PER_PAGE = 1;  // 每次加载多少页数据
 
     List<String> stringList = new ArrayList<>();
 
@@ -32,16 +36,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         PermissionUtil.requestStoragePermission(this);
 
         findViewById(R.id.btn_test).setOnClickListener(this);
-
+        findViewById(R.id.btn_test2).setOnClickListener(this);
 
         rvList = findViewById(R.id.rv_list);
         rvList.setLayoutManager(new LinearLayoutManager(this));
         simpleAdapter = new SimpleAdapter(R.layout.simple_item, stringList);
+
         simpleAdapter.setEnableLoadMore(true);
         simpleAdapter.setOnLoadMoreListener(this, rvList);
+
         rvList.setAdapter(simpleAdapter);
-
-
     }
 
     @Override
@@ -50,6 +54,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (id == R.id.btn_test) {
             loadData(); // 至少要有1條數據才會觸發LoadMore事件
+        } else if (id == R.id.btn_test2) {
+            MAX_PAGE = 150;  // 增加到150页
+
+            hasMore = true;
+            simpleAdapter.setEnableLoadMore(true);
+
+            onLoadMoreRequested(); // 直接调用BaseQuickAdapter.RequestLoadMoreListener::onLoadMoreRequested()方法
         }
     }
 
@@ -67,8 +78,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void loadData() {
         SLog.info("loadData");
         if (hasMore) {
+            // 定义本次加载数据的起止范围
             int start = currPage + 1;
             int end = currPage + SCREEN_PER_PAGE;
+            SLog.info("start[%d], end[%d]", start, end);
+
+
             for (int i = start; i <= end; i++) {
                 stringList.add(String.valueOf(i));
             }

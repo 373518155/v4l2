@@ -52,9 +52,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         int id = view.getId();
 
-        if (id == R.id.btn_test) {
+        if (id == R.id.btn_load_init) {
             loadData(); // 至少要有1條數據才會觸發LoadMore事件
-        } else if (id == R.id.btn_test2) {
+        } else if (id == R.id.btn_new_data) {
             MAX_PAGE = 150;  // 增加到150页
 
             hasMore = true;

@@ -12,13 +12,13 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <Button
-            android:id="@+id/btn_test"
+            android:id="@+id/btn_load_init"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="加载初始数据"
             />
         <Button
-            android:id="@+id/btn_test2"
+            android:id="@+id/btn_new_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="点击这里模拟有新的数据到达"

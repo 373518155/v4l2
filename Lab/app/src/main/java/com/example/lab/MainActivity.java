@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         PermissionUtil.requestStoragePermission(this);
 
-        findViewById(R.id.btn_test).setOnClickListener(this);
-        findViewById(R.id.btn_test2).setOnClickListener(this);
+        findViewById(R.id.btn_load_init).setOnClickListener(this);
+        findViewById(R.id.btn_new_data).setOnClickListener(this);
 
         rvList = findViewById(R.id.rv_list);
         rvList.setLayoutManager(new LinearLayoutManager(this));
